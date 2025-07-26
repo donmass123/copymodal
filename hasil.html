@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Profit Trading</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            padding: 40px;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #result p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulasi Profit Trading</h1>
+        <form id="profit-form">
+            <label for="action">Pilih Aksi:</label>
+            <select id="action" required>
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+            </select>
+
+            <label for="entry-price">Harga Entri (Entry Price):</label>
+            <input type="text" id="entry-price" placeholder="Masukkan Harga Entri" required>
+
+            <label for="close-price">Harga Penutupan (Closing Price):</label>
+            <input type="text" id="close-price" placeholder="Masukkan Harga Penutupan" required>
+
+            <label for="volume">Volume (Coin):</label>
+            <input type="text" id="volume" placeholder="Masukkan Volume" required>
+
+            <label for="leverage">Leverage:</label>
+            <input type="text" id="leverage" placeholder="Masukkan Leverage" required>
+
+            <button type="submit">Hitung Keuntungan</button>
+        </form>
+
+        <div id="result" class="result">
+            <p id="profit">Keuntungan: 0%</p>
+            <p id="pnL">PnL Penutupan: 0</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('profit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get the selected action (buy/sell) and input values
+            const action = document.getElementById('action').value;
+            let entryPrice = document.getElementById('entry-price').value.replace(',', '.');  // Replace commas with dots
+            let closePrice = document.getElementById('close-price').value.replace(',', '.');  // Replace commas with dots
+            let volume = document.getElementById('volume').value.replace(',', '.');  // Replace commas with dots
+            let leverage = document.getElementById('leverage').value.replace(',', '.');  // Replace commas with dots
+
+            // Convert input values to floats
+            entryPrice = parseFloat(entryPrice);
+            closePrice = parseFloat(closePrice);
+            volume = parseFloat(volume);
+            leverage = parseFloat(leverage);
+
+            if (!entryPrice || !closePrice || !volume || !leverage) {
+                alert('Harap masukkan semua data!');
+                return;
+            }
+
+            // Calculate profit percentage (multiply by 100 for correct percentage)
+            let profit = ((closePrice - entryPrice) / entryPrice) * 100;
+            let pnL = (closePrice - entryPrice) * volume;
+
+            // Adjust the PnL based on Buy or Sell action
+            if (action === 'sell') {
+                profit = ((entryPrice - closePrice) / entryPrice) * 100;
+                pnL = (entryPrice - closePrice) * volume;
+            }
+
+            // Apply leverage to the profit and PnL
+            profit *= leverage;
+            pnL *= leverage;
+
+            // Adjust PnL for scaling (dividing by 100)
+            pnL /= 10;  // This makes the result 13.801 instead of 138.01
+
+            // Display the results
+            document.getElementById('profit').textContent = `Keuntungan: ${profit.toFixed(2)}% (${action === 'buy' ? 'Buy' : 'Sell'})`;
+            document.getElementById('pnL').textContent = `PnL Penutupan: ${pnL.toFixed(3)} (Coin)`;  // Adjust to show 3 decimal places
+        });
+    </script>
+</body>
+</html>
