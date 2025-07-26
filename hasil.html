@@ -96,6 +96,7 @@
         <div id="result" class="result">
             <p id="profit">Keuntungan: 0%</p>
             <p id="pnL">PnL Penutupan: 0</p>
+            <p id="initial-margin">Modal Per Posisi: 0</p>
         </div>
     </div>
 
@@ -103,14 +104,12 @@
         document.getElementById('profit-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Get the selected action (buy/sell) and input values
             const action = document.getElementById('action').value;
-            let entryPrice = document.getElementById('entry-price').value.replace(',', '.');  // Replace commas with dots
-            let closePrice = document.getElementById('close-price').value.replace(',', '.');  // Replace commas with dots
-            let volume = document.getElementById('volume').value.replace(',', '.');  // Replace commas with dots
-            let leverage = document.getElementById('leverage').value.replace(',', '.');  // Replace commas with dots
+            let entryPrice = document.getElementById('entry-price').value.replace(',', '.');
+            let closePrice = document.getElementById('close-price').value.replace(',', '.');
+            let volume = document.getElementById('volume').value.replace(',', '.');
+            let leverage = document.getElementById('leverage').value.replace(',', '.');
 
-            // Convert input values to floats
             entryPrice = parseFloat(entryPrice);
             closePrice = parseFloat(closePrice);
             volume = parseFloat(volume);
@@ -121,26 +120,33 @@
                 return;
             }
 
-            // Calculate profit percentage (multiply by 100 for correct percentage)
+            // Hitung profit dan PnL dasar
             let profit = ((closePrice - entryPrice) / entryPrice) * 100;
             let pnL = (closePrice - entryPrice) * volume;
 
-            // Adjust the PnL based on Buy or Sell action
             if (action === 'sell') {
                 profit = ((entryPrice - closePrice) / entryPrice) * 100;
                 pnL = (entryPrice - closePrice) * volume;
             }
 
-            // Apply leverage to the profit and PnL
+            // Leverage
             profit *= leverage;
             pnL *= leverage;
+            pnL /= 10; // Penyesuaian (jika memang diperlukan)
 
-            // Adjust PnL for scaling (dividing by 100)
-            pnL /= 10;  // This makes the result 13.801 instead of 138.01
+            // Modal per posisi
+            let initialMargin = (entryPrice * volume) / leverage;
 
-            // Display the results
+            // Format angka ke dalam Rupiah
+            const formatIDR = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            });
+
+            // Tampilkan hasil
             document.getElementById('profit').textContent = `Keuntungan: ${profit.toFixed(2)}% (${action === 'buy' ? 'Buy' : 'Sell'})`;
-            document.getElementById('pnL').textContent = `PnL Penutupan: ${pnL.toFixed(3)} (Coin)`;  // Adjust to show 3 decimal places
+            document.getElementById('pnL').textContent = `PnL Penutupan: ${pnL.toFixed(3)} (Coin)`;
+            document.getElementById('initial-margin').textContent = `Modal Per Posisi: ${formatIDR.format(initialMargin)}`;
         });
     </script>
 </body>
