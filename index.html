@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simulasi Profit Copy Trading</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            padding: 30px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        label {
+            margin-top: 20px;
+            display: block;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        small {
+            display: block;
+            margin-top: 5px;
+            color: #777;
+            font-size: 12px;
+        }
+
+        button {
+            margin-top: 30px;
+            padding: 14px;
+            width: 100%;
+            font-size: 16px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #hasil {
+            margin-top: 30px;
+            font-size: 16px;
+            color: #155724;
+            font-weight: 500;
+            background: #e6f4ea;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 6px solid #28a745;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .catatan {
+            margin-top: 30px;
+            background-color: #fff3cd;
+            padding: 20px;
+            border-left: 5px solid #ffc107;
+            border-radius: 8px;
+            color: #856404;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 30px;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Simulasi Profit Copy Trading</h1>
+        <form id="copyForm">
+            <label for="modalTrader">Modal Trader</label>
+            <input type="number" id="modalTrader" step="any" required placeholder="Contoh: 4000">
+            <small>Total modal keseluruhan yang dimiliki oleh trader profesional</small>
+
+            <label for="nominalTrader">Nominal per Posisi Trader</label>
+            <input type="number" id="nominalTrader" step="any" required placeholder="Contoh: 200">
+            <small>Berapa banyak modal yang trader gunakan untuk membuka 1 posisi</small>
+
+            <label for="modalSaya">Modal Saya</label>
+            <input type="number" id="modalSaya" step="any" required placeholder="Contoh: 850">
+            <small>Total modal Anda sendiri yang tersedia untuk copy trading</small>
+
+            <label for="profitPersen">Persentase Profit Posisi (%)</label>
+            <input type="number" id="profitPersen" step="any" required placeholder="Contoh: 20">
+            <small>Keuntungan dari posisi trader dalam persen (%), misalnya 20% berarti profit 20% dari nilai
+                posisi</small>
+
+            <label for="bagiHasil">Persentase Bagi Hasil untuk Trader (%)</label>
+            <input type="number" id="bagiHasil" step="any" required placeholder="Contoh: 30">
+            <small>Persentase keuntungan yang akan diberikan ke trader profesional, misalnya 30%</small>
+
+            <button type="submit">Hitung Keuntungan Saya</button>
+        </form>
+
+        <div id="hasil"></div>
+
+        <div class="catatan">
+            <strong>Catatan:</strong>
+            <ul>
+                <li>Simulasi ini hanya berdasarkan 1 posisi perdagangan.</li>
+                <li>Tidak memperhitungkan faktor biaya seperti spread, komisi, swap, atau slippage.</li>
+                <li>Rasio copy mengikuti proporsi alokasi modal antara trader dan Anda.</li>
+                <li>Profit dibagi berdasarkan persentase bagi hasil yang Anda tentukan.</li>
+            </ul>
+        </div>
+
+        <!-- Grafik Simulasi -->
+        <div class="chart-container">
+            <div class="chart-title">Pembagian Profit antara Anda dan Trader</div>
+            <canvas id="profitChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('copyForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const modalTrader = parseFloat(document.getElementById('modalTrader').value);
+            const nominalTrader = parseFloat(document.getElementById('nominalTrader').value);
+            const modalSaya = parseFloat(document.getElementById('modalSaya').value);
+            const profitPersen = parseFloat(document.getElementById('profitPersen').value);
+            const bagiHasilPersen = parseFloat(document.getElementById('bagiHasil').value);
+
+            const hasil = document.getElementById('hasil');
+
+            if (
+                modalTrader <= 0 || nominalTrader <= 0 || modalSaya <= 0 ||
+                isNaN(profitPersen) || isNaN(bagiHasilPersen) ||
+                bagiHasilPersen < 0 || bagiHasilPersen > 100
+            ) {
+                hasil.innerHTML = "<span style='color:red;'>Mohon isi semua nilai dengan benar. Persentase bagi hasil harus antara 0 - 100.</span>";
+                return;
+            }
+
+            const rasio = nominalTrader / modalTrader;
+            const posisiSaya = modalSaya * rasio;
+            const profitSaya = posisiSaya * (profitPersen / 100);
+
+            const profitUntukTrader = profitSaya * (bagiHasilPersen / 100);
+            const profitUntukAnda = profitSaya - profitUntukTrader;
+
+            // Menentukan kategori risiko berdasarkan rasio
+            let riskCategory = "";
+            let riskColor = "";
+            if (rasio <= 0.1) {
+                riskCategory = "Aman";
+                riskColor = "#28a745"; // Hijau
+            } else if (rasio <= 0.6) {
+                riskCategory = "Hati-Hati";
+                riskColor = "#f0ad4e"; // Kuning
+            } else {
+                riskCategory = "Bahaya";
+                riskColor = "#d9534f"; // Merah
+            }
+
+            hasil.innerHTML = `
+    <strong>Rincian Simulasi:</strong><br><br>
+    ✅ Rasio alokasi posisi trader terhadap modal: <strong>${(rasio * 100).toFixed(4)}%</strong> <span style="color:${riskColor};">(${riskCategory})</span><br>
+    💰 Nominal posisi yang dibuka dari modal Anda: <strong>$${posisiSaya.toFixed(4)}</strong><br>
+    📈 Profit kotor dari posisi: <strong>$${profitSaya.toFixed(4)}</strong><br><br>
+
+    🤝 <u>Bagi Hasil:</u><br>
+    🔸 Untuk Trader (${bagiHasilPersen}%): <strong style="color:#d9534f;">$${profitUntukTrader.toFixed(4)}</strong><br>
+    🔸 Untuk Anda: <strong style="color:#28a745;">$${profitUntukAnda.toFixed(4)}</strong><br><br>
+
+    📌 <em>Posisi Saya = Modal Saya × (Posisi Trader ÷ Modal Trader)</em><br>
+    📌 <em>Profit Saya = Posisi Saya × (Profit Persen ÷ 100)</em><br>
+    📌 <em>Bagi Hasil = Profit Saya × Persentase</em>
+  `;
+
+            // Grafik Chart.js
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            const profitChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Profit untuk Trader', 'Profit untuk Anda'],
+                    datasets: [{
+                        label: 'Profit ($)',
+                        data: [profitUntukTrader, profitUntukAnda],
+                        backgroundColor: ['#d9534f', '#28a745'],
+                        borderColor: ['#d9534f', '#28a745'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    return "$" + tooltipItem.raw.toFixed(4);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function (value) { return "$" + value; }
+                            }
+                        }
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+
+</html>

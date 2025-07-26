@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulasi Copy Trading Variabel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.15);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .bulan-input {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f1f1f1;
+    }
+
+    .total-profit {
+      margin-top: 15px;
+      font-weight: bold;
+      color: green;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simulasi Copy Trading dengan Nominal dan Jumlah Posisi Variabel</h1>
+
+    <label>Modal Trader</label>
+    <input type="number" id="modalTrader" step="any" required placeholder="Contoh: 4000">
+
+    <label>Modal Saya</label>
+    <input type="number" id="modalSaya" step="any" required placeholder="Contoh: 850">
+
+    <label>Persentase Profit per Posisi (%)</label>
+    <input type="number" id="profitPersen" step="any" required placeholder="Contoh: 20">
+
+    <label>Jumlah Bulan Simulasi</label>
+    <input type="number" id="jumlahBulan" value="3" min="1" max="12">
+
+    <button type="button" onclick="buatFormBulan()">Buat Form Bulanan</button>
+
+    <form id="formSimulasi" onsubmit="hitungSimulasi(event)">
+      <div id="inputBulanWrapper"></div>
+      <button type="submit">Hitung Estimasi</button>
+    </form>
+
+    <div id="tabelHasil"></div>
+  </div>
+
+  <script>
+    function buatFormBulan() {
+      const wrapper = document.getElementById('inputBulanWrapper');
+      wrapper.innerHTML = '';
+      const jumlahBulan = parseInt(document.getElementById('jumlahBulan').value);
+
+      for (let i = 1; i <= jumlahBulan; i++) {
+        wrapper.innerHTML += `
+          <div class="bulan-input">
+            <h3>Bulan ${i}</h3>
+            <label>Jumlah Posisi</label>
+            <input type="number" name="jumlahPosisi${i}" required placeholder="Contoh: 4">
+            <label>Nominal per Posisi</label>
+            <input type="number" name="nominalPosisi${i}" required placeholder="Contoh: 200">
+          </div>`;
+      }
+    }
+
+    function hitungSimulasi(e) {
+      e.preventDefault();
+      const modalTrader = parseFloat(document.getElementById('modalTrader').value);
+      const modalSaya = parseFloat(document.getElementById('modalSaya').value);
+      const profitPersen = parseFloat(document.getElementById('profitPersen').value);
+      const jumlahBulan = parseInt(document.getElementById('jumlahBulan').value);
+
+      if (modalTrader <= 0 || modalSaya <= 0 || profitPersen < 0 || jumlahBulan < 1) {
+        alert('Mohon isi semua data utama dengan benar.');
+        return;
+      }
+
+      let hasilTabel = `
+        <table>
+          <thead>
+            <tr>
+              <th>Bulan</th>
+              <th>Jumlah Posisi</th>
+              <th>Nominal Posisi</th>
+              <th>Rasio</th>
+              <th>Nominal Posisi Saya</th>
+              <th>Total Profit Bulan</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      let totalProfit = 0;
+
+      for (let i = 1; i <= jumlahBulan; i++) {
+        const jumlahPosisi = parseFloat(document.querySelector(`[name=jumlahPosisi${i}]`).value);
+        const nominalPosisi = parseFloat(document.querySelector(`[name=nominalPosisi${i}]`).value);
+
+        const rasio = nominalPosisi / modalTrader;
+        const posisiSaya = modalSaya * rasio;
+        const profitPerPosisi = posisiSaya * (profitPersen / 100);
+        const profitBulan = profitPerPosisi * jumlahPosisi;
+        totalProfit += profitBulan;
+
+        hasilTabel += `
+          <tr>
+            <td>Bulan ${i}</td>
+            <td>${jumlahPosisi}</td>
+            <td>$${nominalPosisi.toFixed(2)}</td>
+            <td>${(rasio * 100).toFixed(2)}%</td>
+            <td>$${posisiSaya.toFixed(2)}</td>
+            <td>$${profitBulan.toFixed(2)}</td>
+          </tr>`;
+      }
+
+      hasilTabel += `
+          </tbody>
+        </table>
+        <p class="total-profit">Total Estimasi Profit: $${totalProfit.toFixed(2)}</p>
+      `;
+
+      document.getElementById('tabelHasil').innerHTML = hasilTabel;
+    }
+  </script>
+</body>
+</html>
