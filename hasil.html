@@ -1,153 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulasi Profit Trading</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fc;
-            padding: 40px;
-            margin: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulasi Profit Trading</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fc;
+      padding: 40px;
+      margin: 0;
+    }
 
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            margin: auto;
-        }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: auto;
+    }
 
-        h1 {
-            text-align: center;
-            color: #333;
-        }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
 
-        label {
-            font-weight: bold;
-            margin-top: 15px;
-            display: block;
-            color: #333;
-        }
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+      color: #333;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            margin-bottom: 15px;
-        }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-        }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+    button:hover {
+      background-color: #0056b3;
+    }
 
-        .result {
-            margin-top: 20px;
-            text-align: center;
-        }
+    .result {
+      margin-top: 20px;
+      text-align: center;
+    }
 
-        #result p {
-            font-size: 18px;
-            font-weight: bold;
-        }
-    </style>
+    #result p {
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Simulasi Profit Trading</h1>
-        <form id="profit-form">
-            <label for="action">Pilih Aksi:</label>
-            <select id="action" required>
-                <option value="buy">Buy</option>
-                <option value="sell">Sell</option>
-            </select>
+  <div class="container">
+    <h1>Simulasi Profit Trading</h1>
+    <form id="profit-form">
+      <label for="action">Pilih Aksi:</label>
+      <select id="action" required>
+        <option value="buy">Buy</option>
+        <option value="sell">Sell</option>
+      </select>
 
-            <label for="entry-price">Harga Entri (Entry Price):</label>
-            <input type="text" id="entry-price" placeholder="Masukkan Harga Entri" required>
+      <label for="entry-price">Harga Entri (USD):</label>
+      <input type="text" id="entry-price" placeholder="Masukkan Harga Entri" required>
 
-            <label for="close-price">Harga Penutupan (Closing Price):</label>
-            <input type="text" id="close-price" placeholder="Masukkan Harga Penutupan" required>
+      <label for="close-price">Harga Penutupan (USD):</label>
+      <input type="text" id="close-price" placeholder="Masukkan Harga Penutupan" required>
 
-            <label for="volume">Volume (Coin):</label>
-            <input type="text" id="volume" placeholder="Masukkan Volume" required>
+      <label for="volume">Volume (Coin):</label>
+      <input type="text" id="volume" placeholder="Masukkan Volume" required>
 
-            <label for="leverage">Leverage:</label>
-            <input type="text" id="leverage" placeholder="Masukkan Leverage" required>
+      <label for="leverage">Leverage:</label>
+      <input type="text" id="leverage" placeholder="Masukkan Leverage" required>
 
-            <button type="submit">Hitung Keuntungan</button>
-        </form>
+      <button type="submit">Hitung Keuntungan</button>
+    </form>
 
-        <div id="result" class="result">
-            <p id="profit">Keuntungan: 0%</p>
-            <p id="pnL">PnL Penutupan: 0</p>
-            <p id="initial-margin">Modal Per Posisi: 0</p>
-        </div>
+    <div id="result" class="result">
+      <p id="profit">Keuntungan: 0%</p>
+      <p id="pnL">PnL Penutupan: 0</p>
+      <p id="initial-margin">Modal Per Posisi (USD): 0</p>
+      <p id="initial-margin-idr">Modal Per Posisi (IDR): 0</p>
     </div>
+  </div>
 
-    <script>
-        document.getElementById('profit-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+  <script>
+    document.getElementById('profit-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-            const action = document.getElementById('action').value;
-            let entryPrice = document.getElementById('entry-price').value.replace(',', '.');
-            let closePrice = document.getElementById('close-price').value.replace(',', '.');
-            let volume = document.getElementById('volume').value.replace(',', '.');
-            let leverage = document.getElementById('leverage').value.replace(',', '.');
+      const action = document.getElementById('action').value;
+      let entryPrice = document.getElementById('entry-price').value.replace(',', '.');
+      let closePrice = document.getElementById('close-price').value.replace(',', '.');
+      let volume = document.getElementById('volume').value.replace(',', '.');
+      let leverage = document.getElementById('leverage').value.replace(',', '.');
 
-            entryPrice = parseFloat(entryPrice);
-            closePrice = parseFloat(closePrice);
-            volume = parseFloat(volume);
-            leverage = parseFloat(leverage);
+      entryPrice = parseFloat(entryPrice);
+      closePrice = parseFloat(closePrice);
+      volume = parseFloat(volume);
+      leverage = parseFloat(leverage);
 
-            if (!entryPrice || !closePrice || !volume || !leverage) {
-                alert('Harap masukkan semua data!');
-                return;
-            }
+      if (!entryPrice || !closePrice || !volume || !leverage) {
+        alert('Harap masukkan semua data!');
+        return;
+      }
 
-            // Hitung profit dan PnL dasar
-            let profit = ((closePrice - entryPrice) / entryPrice) * 100;
-            let pnL = (closePrice - entryPrice) * volume;
+      let profit = ((closePrice - entryPrice) / entryPrice) * 100;
+      let pnL = (closePrice - entryPrice) * volume;
 
-            if (action === 'sell') {
-                profit = ((entryPrice - closePrice) / entryPrice) * 100;
-                pnL = (entryPrice - closePrice) * volume;
-            }
+      if (action === 'sell') {
+        profit = ((entryPrice - closePrice) / entryPrice) * 100;
+        pnL = (entryPrice - closePrice) * volume;
+      }
 
-            // Leverage
-            profit *= leverage;
-            pnL *= leverage;
-            pnL /= 10; // Penyesuaian (jika memang diperlukan)
+      profit *= leverage;
+      pnL *= leverage;
+      pnL /= 10;
 
-            // Modal per posisi
-            let initialMargin = (entryPrice * volume) / leverage;
+      let initialMarginUSD = (entryPrice * volume) / leverage;
 
-            // Format angka ke dalam Rupiah
-            const formatIDR = new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR'
-            });
+      // Fetch real-time exchange rate USD to IDR
+      let exchangeRate = 16000; // Default if API fails
+      try {
+        const res = await fetch("https://api.frankfurter.app/latest?amount=1&from=USD&to=IDR");
+        const data = await res.json();
+        exchangeRate = data.rates.IDR;
+      } catch (err) {
+        console.warn("Gagal mengambil kurs, menggunakan default:", err);
+      }
 
-            // Tampilkan hasil
-            document.getElementById('profit').textContent = `Keuntungan: ${profit.toFixed(2)}% (${action === 'buy' ? 'Buy' : 'Sell'})`;
-            document.getElementById('pnL').textContent = `PnL Penutupan: ${pnL.toFixed(3)} (Coin)`;
-            document.getElementById('initial-margin').textContent = `Modal Per Posisi: ${formatIDR.format(initialMargin)}`;
-        });
-    </script>
+      let initialMarginIDR = initialMarginUSD * exchangeRate;
+
+      const formatUSD = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      });
+
+      const formatIDR = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR'
+      });
+
+      document.getElementById('profit').textContent = `Keuntungan: ${profit.toFixed(2)}% (${action === 'buy' ? 'Buy' : 'Sell'})`;
+      document.getElementById('pnL').textContent = `PnL Penutupan: ${formatUSD.format(pnL)}`;
+      document.getElementById('initial-margin').textContent = `Modal Per Posisi (USD): ${formatUSD.format(initialMarginUSD)}`;
+      document.getElementById('initial-margin-idr').textContent = `Modal Per Posisi (IDR): ${formatIDR.format(initialMarginIDR)}`;
+    });
+  </script>
 </body>
 </html>
